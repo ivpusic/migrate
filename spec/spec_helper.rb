@@ -19,7 +19,7 @@ $pg_config_hash = $config_base.merge({
 })
 
 def load_pg_config  
-  config = Config.new("spec/lib/fixtures", "example_pg.config")
+  config = Conf.new("spec/lib/fixtures", "example_pg.config")
   config.init($pg_config_hash)
   config.load!
   return config
@@ -33,7 +33,7 @@ $mysql_config_hash = $config_base.merge({
 })
 
 def load_mysql_config
-  config = Config.new("spec/lib/fixtures", "example_mysql.config")
+  config = Conf.new("spec/lib/fixtures", "example_mysql.config")
   config.init($mysql_config_hash)
   config.load!
   return config

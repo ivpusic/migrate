@@ -1,7 +1,7 @@
-describe "Config" do
-  let(:fixtures) { "spec/lib/fixtures"  }
-  let(:config) { Config.new(fixtures, "example.config") }
-  let(:config_hash) {
+describe "Conf" do
+  let!(:fixtures) { "spec/lib/fixtures"  }
+  let!(:config) { Conf.new(fixtures, "example.config") }
+  let!(:config_hash) {
     {
       host: "localhost",
       port: ("5432").to_i,
@@ -22,12 +22,8 @@ describe "Config" do
   end
 
   it "should not find file" do
-    config = Config.new(".", "custom_file.conf")
+    config = Conf.new(".", "custom_file.conf")
     expect(config.exists?).to eq(false)
-  end
-
-  it "should find file" do
-    expect(config.exists?).to eq(true)
   end
 
   it "should create config file" do
@@ -35,8 +31,9 @@ describe "Config" do
     begin
       expect(File.exist? config_path).to be false
 
-      config = Config.new(fixtures, "test.config")
+      config = Conf.new(fixtures, "test.config")
       config.init(config_hash)
+      expect(config.exists?).to eq(true)     
       expect(File.exist? config_path). to be true
     ensure
       if File.exist? config_path
@@ -44,7 +41,7 @@ describe "Config" do
       end
     end
   end
-
+  
   it "should load configuration" do
     config.init(config_hash)
     config.load!
@@ -62,7 +59,7 @@ describe "Config" do
     begin
       expect(File.exist? config_path).to be false
 
-      config = Config.new(fixtures, "test.config")
+      config = Conf.new(fixtures, "test.config")
       config.init(config_hash)
       expect(File.exist? config_path).to be true
       config.delete

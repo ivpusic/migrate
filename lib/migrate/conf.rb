@@ -1,7 +1,7 @@
 require "parseconfig"
 
 module Migrate
-  class Config
+  class Conf
     attr_reader :root
 
     def initialize(root, file)

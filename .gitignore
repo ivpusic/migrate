@@ -1,3 +1,5 @@
 *.conf
 *.config
 spec/lib/fixtures/v*
+.bundle/
+vendor

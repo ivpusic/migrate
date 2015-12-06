@@ -9,7 +9,7 @@ gem install db-migrate
 ```
 
 ### How it works?
-It saves metadata about your migrations to database. It uses that metadata for executing and creating new migrations.
+It saves metadata about your migrations to database and uses that metadata for executing and creating new migrations.
 
 It supports multiple databases and multiple languages for executing migrations.
 

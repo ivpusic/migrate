@@ -1,0 +1,16 @@
+language: ruby
+
+rvm:
+  - 2.0.0
+  - 2.1
+  - 2.2
+
+script: rspec spec
+
+services:
+  - mysql
+  - postgresql
+
+before_script:
+  - mysql -e 'create database migrate_test;'
+  - psql -c 'create database migrate_test;' -U postgres

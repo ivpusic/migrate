@@ -1,0 +1,136 @@
+#!/usr/bin/env ruby
+
+require "thor"
+require "json"
+require "highline"
+require_relative "../lib/migrate"
+
+include Migrate
+$asker = HighLine.new
+
+class CLI < Thor
+  method_option :root, {
+    :aliases => "-r",
+    :default => ".",
+    :desc => "Sepcify migration root directory, where config file is located"
+  }
+  method_option :config, {
+    :aliases => "-c",
+    :default => "migrate.conf",
+    :desc => "Specify custom configuration file name"
+  }
+  def initialize(*args)
+    super
+    @config = Config.new(options["root"], options["config"])
+
+    init_invoked = ARGV.length > 0 && ARGV[0] == "init"
+    if not init_invoked and @config.exists?
+      @config.load!
+      @migrator = Migrator.new(@config)
+    elsif not init_invoked
+      Log.error("Configuration not found in `#{Pathname.new(@config.root).expand_path}`. " \
+                "Make sure you are in right directory or " \
+                "run `migrate init` to create configuration.")
+      exit
+    end
+  end
+
+  desc "init", "make configuration file"
+  def init
+    Log.info("Creating configuration...")
+
+    storage = nil
+    $asker.choose do |menu|
+      menu.prompt = "Which database do you prefer?"
+
+      menu.choice(:mysql) { storage = "mysql" }
+      menu.choices(:pg) { storage = "pg" }
+    end
+
+    db_defaults = case storage
+    when "mysql"
+      { :port => "3306", :user => "root" }
+    when "pg"
+      { :port => "5432", :user => "postgres" }
+    end
+
+    lang = nil
+    $asker.choose do |menu|
+      menu.prompt = "What language would you like use for your migration scripts?"
+      
+      menu.choice(:sql) { lang = "sql" }
+      menu.choices(:ruby) { lang = "ruby" }
+      menu.choice(:javascript) { lang = "javascript" }
+      menu.choice(:go) { lang = "go" }
+      menu.choice(:python) { lang = "python" }
+    end
+
+    config = {
+      storage: storage,
+      lang: lang,
+      host: $asker.ask("Host: ") {|q| q.default = "localhost"},
+      port: ($asker.ask("Port: ") {|q| q.default = db_defaults[:port]}).to_i,
+      database: $asker.ask("Database Name: ") {|q| q.default = "mydb"},
+      user: $asker.ask("User: ") {|q| q.default = db_defaults[:user]},
+      password: $asker.ask("Password: ") {|q| q.default = nil},
+      version_info: $asker.ask("Version info table: ") {|q| q.default = "version_info"},
+      version_number: $asker.ask("Version number table: ") {|q| q.default = "version_number"}
+    }
+
+    @config.init(config)
+    @config.load!
+    Migrator.new(@config).init
+  rescue Exception => e
+    Log.error("Error while initialization.", e)
+    @config.remove
+    exit
+  end
+
+  desc "new [DESCRIPTION]", "generate files for new migration"
+  def new(description="")
+    @migrator.new(description)
+  end
+
+  desc "up", "Upgrade database schema"
+  option :to, :aliases => "-t", :desc => "Upgrade to the version"
+  def up
+    @migrator.up(options[:to])
+  rescue VersionNotFound => e
+    Log.error("Next version not found.")
+  rescue Exception => e
+    Log.error("Error while migrating up.", e)
+  end
+
+  desc "down [TO_VERSION]", "Downgrade database schema"
+  option :to, :aliases => "-t", :desc => "Downgrade back to the version"
+  def down
+    @migrator.down(options[:to])
+  rescue VersionNotFound => e
+    Log.error("Previous version not found.")
+  rescue Exception => e
+    Log.error("Error while migrating down.", e)
+  end
+
+  desc "list", "Show list of all migrations"
+  option :limit, :aliases => "-l", :desc => "Limit results"
+  option :select, :aliases => "-s", :desc => "Columns to select"
+  def list()
+    @migrator.list(options[:select], options[:limit])
+  end
+
+  desc "delete [VERSION]", "Will delete migration data"
+  def delete(version)
+    @migrator.delete(version.to_i)
+  rescue VersionNotFound
+    Log.error("Version not found.")
+  rescue Exception => e
+    Log.error("Error while removing migration.", e)
+  end
+
+  desc "version", "Show current version"
+  def version()
+    Log.version(@migrator.current_version())
+  end
+end
+
+CLI.start

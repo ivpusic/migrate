@@ -1,4 +1,5 @@
 # migrate
+[![Build Status](https://travis-ci.org/ivpusic/migrate.svg?branch=master)](https://travis-ci.org/ivpusic/migrate)
 
 Tool for managing and executing your database migrations.
 
@@ -8,7 +9,10 @@ Tool for managing and executing your database migrations.
 gem install db-migrate
 ```
 
-### How it works?
+## Demo
+![img](http://i.giphy.com/26tPaeasgQYU2mCoE.gif)
+
+## How it works?
 It saves metadata about your migrations to database and uses that metadata for executing and creating new migrations.
 
 It supports multiple databases and multiple languages for executing migrations.

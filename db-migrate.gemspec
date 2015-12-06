@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'db-migrate'
-  s.version     = '0.0.1'
+  s.version     = '0.0.2'
   s.licenses    = ['MIT']
   s.summary     = "Tool for managing and executing your database migrations."
   s.description = "#{s.summary} It supports multiple databases and multiple languages for writing migration scripts."

@@ -3,3 +3,4 @@
 spec/lib/fixtures/v*
 .bundle/
 vendor
+*.gem

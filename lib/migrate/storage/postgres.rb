@@ -1,5 +1,4 @@
 require "pg"
-require "pry"
 
 module Migrate
   module Storage

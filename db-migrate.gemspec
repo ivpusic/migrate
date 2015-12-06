@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.homepage    = 'https://github.com/ivpusic/migrate'
   s.executables << 'migrate'
 
-  # deps
+  # runtime deps
   s.add_runtime_dependency 'thor', ['0.19.1']
   s.add_runtime_dependency 'highline', ['1.7.8']
   s.add_runtime_dependency 'json', ['1.8.3']
@@ -18,4 +18,8 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'pg', ['0.18.4']
   s.add_runtime_dependency 'parseconfig', ['1.0.6']
   s.add_runtime_dependency 'colorize', ['0.7.7']
+  s.add_runtime_dependency 'terminal-table', ['1.5.2']
+
+  # dev deps
+  s.add_development_dependency "rspec"
 end

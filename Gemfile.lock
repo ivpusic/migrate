@@ -8,6 +8,7 @@ PATH
       mysql2 (= 0.4.2)
       parseconfig (= 1.0.6)
       pg (= 0.18.4)
+      terminal-table (= 1.5.2)
       thor (= 0.19.1)
 
 GEM
@@ -33,6 +34,7 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.4.0)
     rspec-support (3.4.1)
+    terminal-table (1.5.2)
     thor (0.19.1)
 
 PLATFORMS

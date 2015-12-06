@@ -21,7 +21,7 @@ class CLI < Thor
   }
   def initialize(*args)
     super
-    @config = Config.new(options["root"], options["config"])
+    @config = Conf.new(options["root"], options["config"])
 
     init_invoked = ARGV.length > 0 && ARGV[0] == "init"
     if not init_invoked and @config.exists?
@@ -72,7 +72,7 @@ class CLI < Thor
       port: ($asker.ask("Port: ") {|q| q.default = db_defaults[:port]}).to_i,
       database: $asker.ask("Database Name: ") {|q| q.default = "mydb"},
       user: $asker.ask("User: ") {|q| q.default = db_defaults[:user]},
-      password: $asker.ask("Password: ") {|q| q.default = nil},
+      password: $asker.ask("Password: ") {|q| q.echo = "x"},
       version_info: $asker.ask("Version info table: ") {|q| q.default = "version_info"},
       version_number: $asker.ask("Version number table: ") {|q| q.default = "version_number"}
     }

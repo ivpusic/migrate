@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    db-migrate (0.0.2)
+    db-migrate (0.0.3)
       colorize (= 0.7.7)
       highline (= 1.7.8)
       json (= 1.8.3)
@@ -42,7 +42,7 @@ PLATFORMS
 
 DEPENDENCIES
   db-migrate!
-  rspec
+  rspec (= 3.4.0)
 
 BUNDLED WITH
    1.10.6

@@ -51,31 +51,6 @@ Options:
 #### init
 First thing you have to do is to make initial configuration with **migrate init** command.
 
-**Demo:**
-```
-$ migrate init
-[INFO] Creating configuration...
-1. mysql
-2. pg
-Which database do you prefer?
-1
-1. sql
-2. ruby
-3. javascript
-4. go
-5. python
-What language would you like use for your migration scripts?
-1
-Host: |localhost| 
-Port: |3306| 
-Database Name: |mydb|     
-User: |root| 
-Password: password
-Version info table: |version_info| 
-Version number table: |version_number| 
-[SUCCESS] Configuration file created. Location: `./migrate.conf`
-```
-
 #### new
 After that you can start generating migrations by using **migrate new** command. This will generate migration script for you based on your prefered language.
 

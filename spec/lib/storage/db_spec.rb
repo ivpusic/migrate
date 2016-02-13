@@ -1,6 +1,5 @@
 describe "Storage" do
   $dbs.each do |db|
-
     around(:each) do |test|
       db.tx do
         test.run
@@ -9,7 +8,8 @@ describe "Storage" do
 
     context db.type do
       it "should create new migration" do
-        created = db.new_migration("this is description")
+        created = db.new_migration(200, "this is description")
+        expect(created["version"].to_i).to eq(200)
         expect(created).not_to eq(nil)
         expect(db.exec_sql(
           "SELECT * FROM #{$version_info} WHERE version=#{created["version"]}")[0])
@@ -51,6 +51,11 @@ describe "Storage" do
             expect(migrations[2]["version"].to_s).to eq("2")
           end
         end
+      end
+
+      it "should be able to check if version table already exists" do
+        exists = db.tables_exists?
+        expect(exists).to be true
       end
 
       it "should get lowest version" do

@@ -40,6 +40,13 @@ module Migrate
         Log.success("Version table created")
       end
 
+      def tables_exists?
+        vi = self.exec_sql("SHOW TABLES LIKE '#{@config.version_info}'")
+        vn = self.exec_sql("SHOW TABLES LIKE '#{@config.version_number}'")
+
+        vi.length > 0 && vn.length > 0
+      end
+
       def exec_sql(sql)
         results = []
         result = @tx.query sql

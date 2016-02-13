@@ -18,7 +18,7 @@ $pg_config_hash = $config_base.merge({
   :password => ""
 })
 
-def load_pg_config  
+def load_pg_config
   config = Conf.new("spec/lib/fixtures", "example_pg.config")
   config.init($pg_config_hash)
   config.load!

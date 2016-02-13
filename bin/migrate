@@ -26,9 +26,9 @@ class CLI < Thor
   def initialize(*args)
     super
     @config = Conf.new(options["root"], options["config"])
-
     init_invoked = ARGV.length > 0 && ARGV[0] == "init"
-    if not init_invoked and @config.exists?
+
+    if @config.exists?
       @config.load!
       @migrator = Migrator.new(@config)
     elsif not init_invoked
@@ -41,80 +41,90 @@ class CLI < Thor
 
   desc "init", "make configuration file"
   def init
-    Log.info("Creating configuration...")
+    generated_config = false
 
-    storage = nil
-    $asker.choose do |menu|
-      menu.prompt = "Which database do you prefer?"
+    if @migrator == nil
+      Log.info("Creating configuration...")
+      generated_config = true
 
-      menu.choice(:mysql) { storage = "mysql" }
-      menu.choices(:pg) { storage = "pg" }
-    end
+      storage = nil
+      $asker.choose do |menu|
+        menu.prompt = "Which database do you prefer?"
 
-    install_dep = ""
-    case storage
-    when "pg"
-      if `gem list -i pg`.to_b != true
-        install_dep = "sudo gem install pg -v #{@@pg_version}"
-        Log.info "pg package not installed. Will install it."
+        menu.choice(:mysql) { storage = "mysql" }
+        menu.choices(:pg) { storage = "pg" }
       end
-    when "mysql"
-      if `gem list -i mysql2`.to_b != "true"
-        install_dep = "sudo gem install mysql2 -v #{@@mysql_version}"
-        Log.info "mysql2 package not installed. Will install it."
+
+      install_dep = ""
+      case storage
+      when "pg"
+        if `gem list -i pg`.to_b != true
+          install_dep = "gem install pg -v #{@@pg_version}"
+          Log.info "pg package not installed. Will install it."
+        end
+      when "mysql"
+        if `gem list -i mysql2`.to_b != "true"
+          install_dep = "gem install mysql2 -v #{@@mysql_version}"
+          Log.info "mysql2 package not installed. Will install it."
+        end
       end
-    end
 
-    unless install_dep.empty?
-      Log.info "Running '#{install_dep}'"
-      unless system(install_dep)
-        raise "Wrror while install dependencies. Please try to run '#{install_dep}' manually and try running 'init' again."
-      else
-        Log.info "Missing dependencies installed"
+      unless install_dep.empty?
+        Log.info "Running '#{install_dep}'"
+        unless system(install_dep)
+          raise "Wrror while install dependencies. Please try to run '#{install_dep}' manually and try running 'init' again."
+        else
+          Log.info "Missing dependencies installed"
+        end
       end
+
+      db_defaults = case storage
+      when "mysql"
+        { :port => "3306", :user => "root" }
+      when "pg"
+        { :port => "5432", :user => "postgres" }
+      end
+
+      lang = nil
+      $asker.choose do |menu|
+        menu.prompt = "What language would you like use for your migration scripts?"
+
+        menu.choice(:sql) { lang = "sql" }
+        menu.choices(:ruby) { lang = "ruby" }
+        menu.choice(:javascript) { lang = "javascript" }
+        menu.choice(:go) { lang = "go" }
+        menu.choice(:python) { lang = "python" }
+      end
+
+      config = {
+        storage: storage,
+        lang: lang,
+        host: $asker.ask("Host: ") {|q| q.default = "localhost"},
+        port: ($asker.ask("Port: ") {|q| q.default = db_defaults[:port]}).to_i,
+        database: $asker.ask("Database Name: ") {|q| q.default = "mydb"},
+        user: $asker.ask("User: ") {|q| q.default = db_defaults[:user]},
+        password: $asker.ask("Password: ") {|q| q.echo = "x"},
+        version_info: $asker.ask("Version info table: ") {|q| q.default = "version_info"},
+        version_number: $asker.ask("Version number table: ") {|q| q.default = "version_number"}
+      }
+
+      @config.init(config)
+      @config.load!
+      @migrator = Migrator.new(@config)
     end
 
-    db_defaults = case storage
-    when "mysql"
-      { :port => "3306", :user => "root" }
-    when "pg"
-      { :port => "5432", :user => "postgres" }
-    end
-
-    lang = nil
-    $asker.choose do |menu|
-      menu.prompt = "What language would you like use for your migration scripts?"
-
-      menu.choice(:sql) { lang = "sql" }
-      menu.choices(:ruby) { lang = "ruby" }
-      menu.choice(:javascript) { lang = "javascript" }
-      menu.choice(:go) { lang = "go" }
-      menu.choice(:python) { lang = "python" }
-    end
-
-    config = {
-      storage: storage,
-      lang: lang,
-      host: $asker.ask("Host: ") {|q| q.default = "localhost"},
-      port: ($asker.ask("Port: ") {|q| q.default = db_defaults[:port]}).to_i,
-      database: $asker.ask("Database Name: ") {|q| q.default = "mydb"},
-      user: $asker.ask("User: ") {|q| q.default = db_defaults[:user]},
-      password: $asker.ask("Password: ") {|q| q.echo = "x"},
-      version_info: $asker.ask("Version info table: ") {|q| q.default = "version_info"},
-      version_number: $asker.ask("Version number table: ") {|q| q.default = "version_number"}
-    }
-
-    @config.init(config)
-    @config.load!
-    Migrator.new(@config).init
+    @migrator.init
+    @migrator.recover
   rescue Exception => e
     Log.error("Error while initialization.", e)
-    @config.delete
+    if generated_config
+      @config.delete
+    end
     exit
   end
 
   desc "new [DESCRIPTION]", "generate files for new migration"
-  def new(description="")
+  def new(description="migration")
     @migrator.new(description)
   end
 

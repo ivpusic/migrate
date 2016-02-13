@@ -1,4 +1,5 @@
 require "pg"
+require 'wannabe_bool'
 
 module Migrate
   module Storage
@@ -11,6 +12,26 @@ module Migrate
           user: @config.user,
           password: @config.password,
         })
+      end
+
+      def tables_exists?
+        vi = self.exec_sql <<-eos
+          SELECT EXISTS (
+            SELECT 1
+            FROM information_schema.tables
+            WHERE table_name = '#{@config.version_info}'
+          );
+        eos
+
+        vn = self.exec_sql <<-eos
+          SELECT EXISTS (
+            SELECT 1
+            FROM information_schema.tables
+            WHERE table_name = '#{@config.version_number}'
+          );
+        eos
+
+        vi[0]["exists"].to_b && vn[0]["exists"].to_b
       end
 
       def create_tables

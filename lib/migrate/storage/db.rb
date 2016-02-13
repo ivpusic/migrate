@@ -13,10 +13,10 @@ module Migrate
         @config.storage
       end
 
-      def new_migration(description="")
+      def new_migration(version=0, description="")
         self.exec_sql <<-eos
-          INSERT INTO #{@config.version_info} (description, created_date) 
-          VALUES('#{description}', now())
+          INSERT INTO #{@config.version_info} (version, description, created_date)
+          VALUES(#{version}, '#{description}', now())
         eos
 
         res = self.exec_sql <<-eos
@@ -26,7 +26,7 @@ module Migrate
       end
 
       def list_migrations(selects, limit)
-        self.exec_sql <<-eos 
+        self.exec_sql <<-eos
           SELECT #{(selects == nil ? "*" : selects)} FROM #{@config.version_info}
           ORDER BY last_up, version
           #{limit != nil ? "LIMIT #{limit}" : ""}
@@ -57,9 +57,19 @@ module Migrate
         eos
       end
 
+      def highest_version
+        self.extract_version self.exec_sql <<-eos
+          SELECT version FROM #{@config.version_info}
+            ORDER BY version DESC
+          LIMIT 1
+        eos
+      rescue VersionNotFound => e
+        0
+      end
+
       def next_version
         self.extract_version self.exec_sql <<-eos
-          SELECT version FROM #{@config.version_info} 
+          SELECT version FROM #{@config.version_info}
             WHERE version > (SELECT version FROM #{@config.version_number} LIMIT 1)
           ORDER BY version
           LIMIT 1
@@ -75,8 +85,8 @@ module Migrate
 
       def prev_version
         self.extract_version self.exec_sql <<-eos
-          SELECT version FROM #{@config.version_info} 
-            WHERE version < (SELECT version FROM #{@config.version_number} LIMIT 1) 
+          SELECT version FROM #{@config.version_info}
+            WHERE version < (SELECT version FROM #{@config.version_number} LIMIT 1)
           ORDER BY version DESC
           LIMIT 1
         eos
@@ -89,7 +99,7 @@ module Migrate
 
       def log_down(version)
         self.exec_sql "UPDATE #{@config.version_info} SET last_down=now() WHERE version=#{version}"
-        
+
         lowest_version = self.lowest_version
         version_to_save = lowest_version.to_i < version.to_i ? self.prev_version().to_i : 0
         self.exec_sql "UPDATE #{@config.version_number} SET version=#{version_to_save}"
@@ -102,6 +112,13 @@ module Migrate
         else
           raise VersionNotFound
         end
+      end
+
+      def version_exists?(version)
+        self.get_migration(version)
+        true
+      rescue VersionNotFound
+        false
       end
 
       def delete(version)
@@ -134,6 +151,10 @@ module Migrate
       # Will create database model used by tool
       def create_tables
         raise "Implementation for creating tables not found"
+      end
+
+      def tables_exists?
+        raise "Implementation for checking if version tables already exists not found"
       end
 
       # Executes SQL

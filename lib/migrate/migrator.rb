@@ -17,23 +17,55 @@ module Migrate
 
     def init
       @db.tx do
-        @db.create_tables
+        if @db.tables_exists?
+          Log.info("Version tables already exist.")
+        else
+          @db.create_tables
+        end
+
+        self.recover
       end
     end
 
-    def migration_dir(migration)
-      date = DateTime.parse(migration["created_date"].to_s)
-      "#{@config.root}/v#{migration["version"]}-#{date.strftime("%Y-%m-%d")}"
+    def recover
+      @db.tx do
+        directory = @config.root
+        migrations = Dir.entries(directory).select { |file| File.directory? File.join(directory, file)}
+        migrations.each do |migration|
+          match = migration.match(/v(\d*)-(.*)/i)
+          if match != nil
+            v, desc = match.captures
+            unless @db.version_exists?(v)
+              self.new(desc, v)
+            end
+          end
+        end
+      end
     end
 
-    def new(desc)
+
+    def migration_dir(migration)
+      date = DateTime.parse(migration["created_date"].to_s)
+      "#{@config.root}/v#{migration["version"]}-#{migration["description"]}"
+    end
+
+    def new(desc, version=nil)
       @db.tx do
         Log.info("Creating new migration...")
 
-        migration = @db.new_migration(desc)
+        if version == nil
+          version = @db.highest_version.to_i + 1
+        end
+
+        migration = @db.new_migration(version, desc)
         migration_dir = self.migration_dir(migration)
-        Dir.mkdir migration_dir
-        @lang.create_migration(migration_dir)
+
+        if Dir.exists? migration_dir
+          Log.info("Migration directory '#{migration_dir}' already exists.")
+        else
+          Dir.mkdir migration_dir
+          @lang.create_migration(migration_dir)
+        end
 
         Log.success("Migration for version #{migration["version"]} created.")
         migration_dir

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    db-migrate (0.0.4)
+    db-migrate (0.2.0)
       colorize (= 0.7.7)
       highline (= 1.7.8)
       json (= 1.8.3)

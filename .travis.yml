@@ -7,6 +7,9 @@ rvm:
 
 script: "bundle exec rspec"
 
+addons:
+  postgresql: "9.4"
+
 services:
   - mysql
   - postgresql
@@ -14,3 +17,5 @@ services:
 before_script:
   - mysql -e 'create database migrate_test;'
   - psql -c 'create database migrate_test;' -U postgres
+  - psql -c 'CREATE SCHEMA IF NOT EXISTS public;' -U postgres
+  - psql -c 'SET search_path = public;' -U postgres

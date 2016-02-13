@@ -3,12 +3,16 @@
 require "thor"
 require "json"
 require "highline"
+require 'wannabe_bool'
 require_relative "../lib/migrate"
 
 include Migrate
 $asker = HighLine.new
 
 class CLI < Thor
+  @@pg_version = "0.18.4"
+  @@mysql_version = "0.4.2"
+
   method_option :root, {
     :aliases => "-r",
     :default => ".",
@@ -47,6 +51,29 @@ class CLI < Thor
       menu.choices(:pg) { storage = "pg" }
     end
 
+    install_dep = ""
+    case storage
+    when "pg"
+      if `gem list -i pg`.to_b != true
+        install_dep = "sudo gem install pg -v #{@@pg_version}"
+        Log.info "pg package not installed. Will install it."
+      end
+    when "mysql"
+      if `gem list -i mysql2`.to_b != "true"
+        install_dep = "sudo gem install mysql2 -v #{@@mysql_version}"
+        Log.info "mysql2 package not installed. Will install it."
+      end
+    end
+
+    unless install_dep.empty?
+      Log.info "Running '#{install_dep}'"
+      unless system(install_dep)
+        raise "Wrror while install dependencies. Please try to run '#{install_dep}' manually and try running 'init' again."
+      else
+        Log.info "Missing dependencies installed"
+      end
+    end
+
     db_defaults = case storage
     when "mysql"
       { :port => "3306", :user => "root" }
@@ -57,7 +84,7 @@ class CLI < Thor
     lang = nil
     $asker.choose do |menu|
       menu.prompt = "What language would you like use for your migration scripts?"
-      
+
       menu.choice(:sql) { lang = "sql" }
       menu.choices(:ruby) { lang = "ruby" }
       menu.choice(:javascript) { lang = "javascript" }
@@ -82,7 +109,7 @@ class CLI < Thor
     Migrator.new(@config).init
   rescue Exception => e
     Log.error("Error while initialization.", e)
-    @config.remove
+    @config.delete
     exit
   end
 

@@ -1,15 +1,14 @@
 PATH
   remote: .
   specs:
-    db-migrate (0.0.3)
+    db-migrate (0.0.4)
       colorize (= 0.7.7)
       highline (= 1.7.8)
       json (= 1.8.3)
-      mysql2 (= 0.4.2)
       parseconfig (= 1.0.6)
-      pg (= 0.18.4)
       terminal-table (= 1.5.2)
       thor (= 0.19.1)
+      wannabe_bool (= 0.5.0)
 
 GEM
   remote: https://rubygems.org/
@@ -25,24 +24,27 @@ GEM
       rspec-core (~> 3.4.0)
       rspec-expectations (~> 3.4.0)
       rspec-mocks (~> 3.4.0)
-    rspec-core (3.4.1)
+    rspec-core (3.4.2)
       rspec-support (~> 3.4.0)
     rspec-expectations (3.4.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.4.0)
-    rspec-mocks (3.4.0)
+    rspec-mocks (3.4.1)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.4.0)
     rspec-support (3.4.1)
     terminal-table (1.5.2)
     thor (0.19.1)
+    wannabe_bool (0.5.0)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   db-migrate!
+  mysql2 (= 0.4.2)
+  pg (= 0.18.4)
   rspec (= 3.4.0)
 
 BUNDLED WITH
-   1.10.6
+   1.11.2

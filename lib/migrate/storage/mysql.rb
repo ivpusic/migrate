@@ -7,7 +7,7 @@ module Migrate
         super
         @conn = Mysql2::Client.new(
           :database => @config.database,
-          :host => @config.host, 
+          :host => @config.host,
           :port => @config.port,
           :username => @config.user,
           :password => @config.password,
@@ -22,8 +22,8 @@ module Migrate
           version INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
           description TEXT,
           created_date TIMESTAMP NOT NULL,
-          last_up TIMESTAMP,
-          last_down TIMESTAMP
+          last_up TIMESTAMP NULL,
+          last_down TIMESTAMP NULL
         );
         eos
 

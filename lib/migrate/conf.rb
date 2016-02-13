@@ -32,10 +32,19 @@ module Migrate
     def load!
       Log.info("Loading configuration...")
       config = ParseConfig.new(@file_path)
-  
+
       config.get_params.map do |param|
+        value = nil
+        env_var = config[param].match(/\$\{(.*)\}/)
+
+        if env_var != nil
+          value = ENV[env_var[1]]
+        else
+          value = config[param]
+        end
+
         self.class.send(:attr_reader, param)
-        instance_variable_set("@#{param}", config[param])
+        instance_variable_set("@#{param}", value)
       end
 
       @loaded = true
@@ -43,7 +52,9 @@ module Migrate
     end
 
     def delete
-      File.delete @file_path
+      if File.exists? @file_path
+        File.delete @file_path
+      end
     rescue Exception => e
       Log.error("Error while removing configuration file.", e)
       exit
@@ -53,12 +64,14 @@ module Migrate
       case @storage
       when "pg"
         if @pg == nil
+          require_relative "./storage/postgres"
           @pg = Storage::Postgres.new(self)
         end
 
         @pg
       when "mysql"
         if @mysql == nil
+          require_relative "./storage/mysql"
           @mysql = Storage::Mysql.new(self)
         end
 

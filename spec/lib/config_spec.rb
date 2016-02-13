@@ -9,7 +9,7 @@ describe "Conf" do
       user: "postgres",
       password: "password",
       version_info: "version_info",
-      version_number: "version_number"
+      version_number: "${MIGRATE_TEST_VERSION_NUMBER}"
     }
   }
 
@@ -33,7 +33,7 @@ describe "Conf" do
 
       config = Conf.new(fixtures, "test.config")
       config.init(config_hash)
-      expect(config.exists?).to eq(true)     
+      expect(config.exists?).to eq(true)
       expect(File.exist? config_path). to be true
     ensure
       if File.exist? config_path
@@ -41,8 +41,9 @@ describe "Conf" do
       end
     end
   end
-  
+
   it "should load configuration" do
+    ENV["MIGRATE_TEST_VERSION_NUMBER"] = "version_number"
     config.init(config_hash)
     config.load!
     expect(config.host).to eq("localhost")
@@ -71,7 +72,7 @@ describe "Conf" do
     end
   end
 
-  [{type: "pg", cls: Storage::Postgres, conf: $pg_config_hash}, 
+  [{type: "pg", cls: Storage::Postgres, conf: $pg_config_hash},
    {type: "mysql", cls: Storage::Mysql, conf: $mysql_config_hash}].each do |storage|
     context storage[:type] do
       it "should be able to get database instance" do
@@ -83,7 +84,7 @@ describe "Conf" do
   end
 
   [{type: "go", cls: Lang::Go}, {type: "sql", cls: Lang::Sql},
-   {type: "ruby", cls: Lang::Ruby}, {type: "javascript", cls: Lang::Javascript}, 
+   {type: "ruby", cls: Lang::Ruby}, {type: "javascript", cls: Lang::Javascript},
    {type: "python", cls: Lang::Python}].each do |lang|
     context lang[:type] do
       it "should be able to get language instance" do

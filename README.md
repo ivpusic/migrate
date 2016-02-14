@@ -83,12 +83,12 @@ version_number=version_number_table_name
 If configuration file does not exist, it will run interactive configuration file creation process. You will answer few questions about your database, and **migrate** will create configuration file for you.
 
 #### new
-After that you can start generating migrations by using **migrate new** command. This will generate migration scripts for you based on your prefered language.
+This command will generate migration scripts for you based on your prefered language.
 
 You will get new directory in format `vXXX-YYYY`, where `XXX` is version number, and `YYY` is short description you provide. Inside generated directory there will be two files. `up.LANG` and `down.LANG`, where `LANG` is language you use for writing migration scripts. 
 
 #### up
-When you are done with writing your `up` and `down` migration script, you can execute **migrate up** to run up migration script for new version. You can also execute multiple migrations in single call by providing `--to n` argument, where `n` is highest version where you want to navigate.
+When you are done with writing your `up` and `down` migration script, you can execute **migrate up** to run up migration script for new version. Running `up` without arguments will move for one version up. You can also execute multiple migrations in single call by providing `--to n` argument, where `n` is highest version where you want to navigate.
 
 #### down
 You can also use **migrate down** to go one version back. `down` comand also accepts `--to n` argument, but in this case `n` is lowest version where you want to navigate.

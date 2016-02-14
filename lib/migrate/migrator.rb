@@ -104,15 +104,19 @@ module Migrate
       Log.success("Migrations executed. Current version: #{@db.current_version}")
     end
 
-    def up(to_version=nil)
+    def up(to_version=nil, all=false)
       @db.tx do
         self.exec_migrations do |last_version|
-          new_version = @db.next_version
-          if to_version == nil
-            to_version = new_version
-          end
+          if all
+            @db.migrations_from(@db.next_version)
+          else
+            new_version = @db.next_version
+            if to_version == nil
+              to_version = new_version
+            end
 
-          @db.migrations_range(new_version, to_version, true)
+            @db.migrations_range(new_version, to_version, true)
+          end
         end
       end
     end

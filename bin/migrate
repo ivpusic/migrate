@@ -130,8 +130,9 @@ class CLI < Thor
 
   desc "up", "Upgrade database schema"
   option :to, :aliases => "-t", :desc => "Upgrade to the version"
+  option :all, :aliases => "-a", :type => :boolean, :default => false, :desc => "Execute all up migrations"
   def up
-    @migrator.up(options[:to])
+    @migrator.up(options[:to], options[:all])
   rescue VersionNotFound => e
     Log.error("Next version not found.")
   rescue Exception => e

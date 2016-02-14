@@ -85,10 +85,14 @@ If configuration file does not exist, it will run interactive configuration file
 #### new
 This command will generate migration scripts for you based on your prefered language.
 
-You will get new directory in format `vXXX-YYYY`, where `XXX` is version number, and `YYY` is short description you provide. Inside generated directory there will be two files. `up.LANG` and `down.LANG`, where `LANG` is language you use for writing migration scripts. 
+You will get new directory in format `vXXX-YYYY`, where `XXX` is version number, and `YYY` is short description you provide. Inside generated directory there will be two files. `up.LANG` and `down.LANG`, where `LANG` is language you use for writing migration scripts.
 
 #### up
-When you are done with writing your `up` and `down` migration script, you can execute **migrate up** to run up migration script for new version. Running `up` without arguments will move for one version up. You can also execute multiple migrations in single call by providing `--to n` argument, where `n` is highest version where you want to navigate.
+When you are done with writing your `up` and `down` migration script, you can execute **migrate up** to run up migration script for new version.
+
+Running `up` without arguments will move for one version up. You can also execute multiple migrations in single call by providing `--to n` argument, where `n` is highest version where you want to navigate.
+
+If you want to run all remaining available migrations, you can pass `-a` flag to `up` command, and **migrate** will run all available migrations.
 
 #### down
 You can also use **migrate down** to go one version back. `down` comand also accepts `--to n` argument, but in this case `n` is lowest version where you want to navigate.

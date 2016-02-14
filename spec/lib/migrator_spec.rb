@@ -65,6 +65,19 @@ describe "Migrator" do
         expect(current.to_i + 2).to eq(db.current_version().to_i)
       end
 
+      it "should execute all up migrations" do
+        db.exec_sql "INSERT INTO #{$version_info} (created_date) VALUES (now())"
+        db.exec_sql "INSERT INTO #{$version_info} (created_date) VALUES (now())"
+        current = db.current_version().to_i
+        create_migration_dir.call(current + 1)
+        create_migration_dir.call(current + 2)
+        create_migration_dir.call(current + 3)
+        create_migration_dir.call(current + 4)
+        migrator.up(nil, true)
+
+        expect(current.to_i + 4).to eq(db.current_version().to_i)
+      end
+
       it "should execute one down migration" do
         current = db.current_version().to_i
         create_migration_dir.call(current)

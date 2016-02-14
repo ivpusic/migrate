@@ -41,6 +41,14 @@ module Migrate
           eos
       end
 
+      def migrations_from(from)
+        self.exec_sql <<-eos
+          SELECT * FROM #{@config.version_info}
+            WHERE version >= #{from}
+          ORDER BY version
+          eos
+      end
+
       def extract_version(results)
         if results && results.count > 0
           results[0]["version"]

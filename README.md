@@ -10,6 +10,7 @@ gem install db-migrate
 ```
 
 If you are going to use for example Postgres with **migrate**, make sure that you have Postgresql server running.
+**migrate** is using lazy installation of database specific gems, so it will install `pg` or `mysql2` (if they are not installed already) gem when you choose database type. It is recommended that you install them manually ([officialy-supported-versions](https://github.com/ivpusic/migrate/blob/master/bin/migrate#L13)).
 
 ## Demo
 ![img](http://i.giphy.com/26tPaeasgQYU2mCoE.gif)

@@ -30,12 +30,38 @@ class CLI < Thor
 
     if @config.exists?
       @config.load!
+      CLI.install_deps(@config.storage)
       @migrator = Migrator.new(@config)
     elsif not init_invoked
       Log.error("Configuration not found in `#{Pathname.new(@config.root).expand_path}`. " \
                 "Make sure you are in right directory or " \
                 "run `migrate init` to create configuration.")
       exit
+    end
+  end
+
+  def self.install_deps(storage)
+    install_dep = ""
+    case storage
+    when "pg"
+      if `gem list -i pg`.to_b != true
+        install_dep = "gem install pg -v #{@@pg_version}"
+        Log.info "pg package not installed. Will install it."
+      end
+    when "mysql"
+      if `gem list -i mysql2`.to_b != "true"
+        install_dep = "gem install mysql2 -v #{@@mysql_version}"
+        Log.info "mysql2 package not installed. Will install it."
+      end
+    end
+
+    unless install_dep.empty?
+      Log.info "Running '#{install_dep}'"
+      unless system(install_dep)
+        raise "Wrror while install dependencies. Please try to run '#{install_dep}' manually and try running 'init' again."
+      else
+        Log.info "Missing dependencies installed"
+      end
     end
   end
 
@@ -55,28 +81,7 @@ class CLI < Thor
         menu.choices(:pg) { storage = "pg" }
       end
 
-      install_dep = ""
-      case storage
-      when "pg"
-        if `gem list -i pg`.to_b != true
-          install_dep = "gem install pg -v #{@@pg_version}"
-          Log.info "pg package not installed. Will install it."
-        end
-      when "mysql"
-        if `gem list -i mysql2`.to_b != "true"
-          install_dep = "gem install mysql2 -v #{@@mysql_version}"
-          Log.info "mysql2 package not installed. Will install it."
-        end
-      end
-
-      unless install_dep.empty?
-        Log.info "Running '#{install_dep}'"
-        unless system(install_dep)
-          raise "Wrror while install dependencies. Please try to run '#{install_dep}' manually and try running 'init' again."
-        else
-          Log.info "Missing dependencies installed"
-        end
-      end
+      CLI.install_deps(storage)
 
       db_defaults = case storage
       when "mysql"
